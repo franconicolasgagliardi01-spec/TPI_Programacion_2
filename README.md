@@ -1,6 +1,6 @@
 # Food Store – Sistema de Gestión de Pedidos de Comida
 
-Trabajo Práctico Integrador para la materia **Programación 2** de la Tecnicatura Universitaria en Programación (A Distancia). Desarrollado en **Java 25** aplicando Programación Orientada a Objetos (POO), colecciones en memoria y arquitectura en capas.
+Trabajo Práctico Integrador para la materia **Programación 2** de la Tecnicatura Universitaria en Programación FRM. Desarrollado en **Java 25** aplicando Programación Orientada a Objetos (POO), colecciones en memoria y arquitectura en capas.
 
 ---
 
