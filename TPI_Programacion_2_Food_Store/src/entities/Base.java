@@ -2,12 +2,9 @@ package entities;
 
 import java.time.LocalDateTime;
 
-public class Base {
+public abstract class Base {
     private Long id;
-    private boolean eliminado = false;
+    private boolean eliminado;
     private LocalDateTime createdAt;
 
-    public void setEliminado(boolean eliminado) {
-        this.eliminado = eliminado;
-    }
 }

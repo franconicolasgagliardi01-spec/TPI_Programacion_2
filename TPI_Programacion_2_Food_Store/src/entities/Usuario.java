@@ -12,11 +12,4 @@ public class Usuario extends Base {
     private Rol rol;
     private ArrayList<Pedido> pedidos = new ArrayList<>();
 
-    public Usuario(String nombre, String apellido, String mail, String celular, Rol rol) {
-        this.nombre = nombre;
-        this.apellido = apellido;
-        this.mail = mail;
-        this.celular = celular;
-        this.rol = rol;
-    }
 }
