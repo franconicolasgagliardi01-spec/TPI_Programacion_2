@@ -13,6 +13,9 @@
 *.tar.gz
 *.rar
 
+# Permitir explícitamente los drivers o librerías del proyecto
+!lib/*.jar
+
 # Carpetas de salida de compilación e infraestructura de compilación
 target/
 bin/
