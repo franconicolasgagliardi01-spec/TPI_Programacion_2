@@ -134,7 +134,10 @@ public class DataSaver {
         String sql = "INSERT INTO detalle_pedidos (id, cantidad, subtotal, id_pedido, id_producto, eliminado, created_at) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            // FIX: solo guardamos detalles de pedidos que no estén eliminados,
+            // para mantener consistencia con la baja lógica.
             for (Pedido pedido : pedidoService.obtenerTodos()) {
+                if (pedido.isEliminado()) continue;
                 for (DetallePedido d : pedido.getDetalles()) {
                     ps.setLong(1, d.getId());
                     ps.setInt(2, d.getCantidad());

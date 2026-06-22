@@ -12,13 +12,30 @@ public class UsuarioService {
     private Long nextId = 1L;
 
     // ---- CREATE (HU-USR-02) ----
-    public Usuario crear(String nombre, String apellido, String email,
-                          String celular, Rol rol) {
+    public Usuario crear(String nombre, String apellido, String email, String celular, Rol rol) {
+        // FIX: validaciones de formato antes de instanciar el objeto,
+        // así un campo inválido impide la creación (antes el setter rechazaba
+        // silenciosamente y el objeto quedaba con campos null).
         if (nombre == null || nombre.isBlank()) {
             throw new IllegalArgumentException("El nombre no puede estar vacío");
         }
+        if (!nombre.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+")) {
+            throw new IllegalArgumentException("El nombre solo puede contener letras");
+        }
+        if (apellido == null || apellido.isBlank()) {
+            throw new IllegalArgumentException("El apellido no puede estar vacío");
+        }
+        if (!apellido.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+")) {
+            throw new IllegalArgumentException("El apellido solo puede contener letras");
+        }
         if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("El mail no puede estar vacío");
+            throw new IllegalArgumentException("El email no puede estar vacío");
+        }
+        if (celular == null || celular.isBlank()) {
+            throw new IllegalArgumentException("El celular no puede estar vacío");
+        }
+        if (!celular.matches("[0-9]+")) {
+            throw new IllegalArgumentException("El celular solo puede contener números");
         }
         validarMailUnico(email, null);
 
@@ -44,13 +61,19 @@ public class UsuarioService {
 
     // ---- UPDATE (HU-USR-03) ----
     public void editar(Long id, String nuevoNombre, String nuevoApellido, String nuevoEmail,
-                        String nuevoCelular, Rol nuevoRol) {
+                       String nuevoCelular, Rol nuevoRol) {
         Usuario usuario = buscarPorId(id);
 
         if (nuevoNombre != null && !nuevoNombre.isBlank()) {
+            if (!nuevoNombre.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+")) {
+                throw new IllegalArgumentException("El nombre solo puede contener letras");
+            }
             usuario.setNombre(nuevoNombre);
         }
         if (nuevoApellido != null && !nuevoApellido.isBlank()) {
+            if (!nuevoApellido.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+")) {
+                throw new IllegalArgumentException("El apellido solo puede contener letras");
+            }
             usuario.setApellido(nuevoApellido);
         }
         if (nuevoEmail != null && !nuevoEmail.isBlank()) {
@@ -58,6 +81,9 @@ public class UsuarioService {
             usuario.setEmail(nuevoEmail);
         }
         if (nuevoCelular != null && !nuevoCelular.isBlank()) {
+            if (!nuevoCelular.matches("[0-9]+")) {
+                throw new IllegalArgumentException("El celular solo puede contener números");
+            }
             usuario.setCelular(nuevoCelular);
         }
         if (nuevoRol != null) {
@@ -71,15 +97,13 @@ public class UsuarioService {
         usuario.setEliminado(true);
     }
 
-    // Recorre la colección para validar mail único, ignorando al propio
-    // usuario cuando se está editando (idAIgnorar puede ser null al crear).
     private void validarMailUnico(String email, Long idAIgnorar) {
         boolean existe = usuarios.stream()
                 .anyMatch(u -> !u.isEliminado()
                         && u.getEmail().equalsIgnoreCase(email)
                         && (idAIgnorar == null || !u.getId().equals(idAIgnorar)));
         if (existe) {
-            throw new IllegalArgumentException("Ya existe un usuario con ese mail");
+            throw new IllegalArgumentException("Ya existe un usuario con ese email");
         }
     }
 

@@ -14,9 +14,8 @@ public class Producto extends Base {
     public Producto() {
     }
 
-    // Constructor para CREAR un producto nuevo desde el menú
     public Producto(String nombre, double precio, String descripcion, int stock, String imagen,
-                     boolean disponible, Categoria categoria) {
+                    boolean disponible, Categoria categoria) {
         super();
         this.nombre = nombre;
         this.precio = precio;
@@ -27,9 +26,8 @@ public class Producto extends Base {
         this.categoria = categoria;
     }
 
-    // Constructor para RECONSTRUIR un producto leído desde la BD (usado por el DataLoader)
     public Producto(Long id, String nombre, double precio, String descripcion, int stock, String imagen,
-                     boolean disponible, Categoria categoria, boolean eliminado, LocalDateTime createdAt) {
+                    boolean disponible, Categoria categoria, boolean eliminado, LocalDateTime createdAt) {
         super(id, eliminado, createdAt);
         this.nombre = nombre;
         this.precio = precio;
@@ -40,81 +38,54 @@ public class Producto extends Base {
         this.categoria = categoria;
     }
 
-    public String getNombre() {
-        return nombre;
-    }
+    public String getNombre() { return nombre; }
 
     public void setNombre(String nombre) {
+        // FIX: productos pueden tener números y caracteres especiales en el nombre
+        // (ej: "Coca-Cola 500ml", "Pan x12"), solo se rechaza vacío.
         if (nombre == null || nombre.trim().isEmpty()) {
-            System.out.println("Este campo es obligatorio, no puede estar vacío");
-        } else if (!nombre.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+")) {
-            //Aseguro que el nombre solo contenga letras
-            System.out.println("Ingrese un nombre válido");
+            System.out.println("El nombre no puede estar vacío");
         } else {
             this.nombre = nombre.trim();
         }
-
     }
 
-    public double getPrecio() {
-        return precio;
-    }
+    public double getPrecio() { return precio; }
 
     public void setPrecio(double precio) {
         if (precio < 0) {
-            System.out.println("Ingrese un rango de precio correcto");
+            System.out.println("El precio no puede ser negativo");
         } else {
             this.precio = precio;
         }
-
     }
 
-    public String getDescripcion() {
-        return descripcion;
-    }
+    public String getDescripcion() { return descripcion; }
 
     public void setDescripcion(String descripcion) {
         if (descripcion == null || descripcion.trim().isEmpty()) {
-            System.out.println("Este campo es obligatorio, no puede estar vacío");
+            System.out.println("La descripción no puede estar vacía");
         } else {
             this.descripcion = descripcion;
         }
-
     }
 
-    public int getStock() {
-        return stock;
-    }
+    public int getStock() { return stock; }
 
     public void setStock(int stock) {
         if (stock < 0) {
-            System.out.println("Ingrese una cantidad de stock correcta");
+            System.out.println("El stock no puede ser negativo");
         } else {
             this.stock = stock;
         }
     }
 
-    public String getImagen() {
-        return imagen;
-    }
+    public String getImagen() { return imagen; }
+    public void setImagen(String imagen) { this.imagen = imagen; }
 
-    public void setImagen(String imagen) {
-        this.imagen = imagen;
-    }
+    public boolean isDisponible() { return disponible; }
+    public void setDisponible(boolean disponible) { this.disponible = disponible; }
 
-    public boolean isDisponible() {
-        return disponible;
-    }
-
-    public void setDisponible(boolean disponible) {
-        this.disponible = disponible;
-    }
-
-    public Categoria getCategoria() {
-        return categoria;
-    }
-
-    public void setCategoria(Categoria categoria) {
-        this.categoria = categoria;
-    }
+    public Categoria getCategoria() { return categoria; }
+    public void setCategoria(Categoria categoria) { this.categoria = categoria; }
 }

@@ -18,93 +18,59 @@ import java.util.Scanner;
 
 public class Main {
     private static Scanner sc = new Scanner(System.in);
-
-    // URL de conexión a la base SQLite. El archivo foodstore.db se crea
-    // en la raíz del proyecto si todavía no existe.
     private static final String URL = "jdbc:sqlite:foodstore.db";
 
-    // Services: viven acá porque Main es quien arma el "árbol de dependencias"
-    // y quien los va a pasar a cada submenú (cuando se implemente la lógica).
     private static CategoriaService categoriaService = new CategoriaService();
     private static ProductoService productoService = new ProductoService(categoriaService);
     private static UsuarioService usuarioService = new UsuarioService();
     private static PedidoService pedidoService = new PedidoService(usuarioService, productoService);
 
     public static void main(String[] args) {
-        // 1) Asegura que las tablas existan (no borra datos si ya estaban creadas,
-        //    por el IF NOT EXISTS de cada CREATE TABLE).
         DataBaseConection.crearBD(URL);
-
-        // 2) Carga el contenido de la BD a las colecciones en memoria de cada Service.
         DataLoader.cargarTodo(URL, categoriaService, productoService, usuarioService, pedidoService);
 
-        // try/finally: el bloque finally se ejecuta siempre, incluso si algo
-        // dentro del bucle tira una excepción no capturada (RuntimeException,
-        // un error de programación, etc.). Así nunca se pierden los cambios
-        // de la sesión por un crash inesperado del programa.
         try {
-            while (true){ //Bucle principal del programa
-                int opcion = -1; //Inicializo opcion en -1 en caso de que entre a catch para que no se rompa
-                boolean salir = false; //variable que finalizara el programa
+            while (true) {
+                int opcion = -1;
+                boolean salir = false;
 
-                do { //valido que la opcion sea un numero valido
-                    try{ //Atrapo errores de formato
+                do {
+                    try {
                         System.out.println("=== SISTEMA DE PEDIDOS (FOOD STORE) ===");
                         System.out.println("1. Categorías\n2. Productos\n3. Usuarios\n4. Pedidos\n0. Salir");
                         opcion = Integer.parseInt(sc.nextLine());
-                    }catch (NumberFormatException nfe){
+                    } catch (NumberFormatException nfe) {
                         System.out.println("Debe ingresar un numero entero...");
                     }
-                }while (!List.of(1, 2, 3, 4, 0).contains(opcion));
+                } while (!List.of(1, 2, 3, 4, 0).contains(opcion));
 
-                switch (opcion){ //switch con opciones que llama a los submenu
-                    case 1:
-                        menuCategorias();
-                        break;
-                    case 2:
-                        menuProductos();
-                        break;
-                    case 3:
-                        menuUsuarios();
-                        break;
-                    case 4:
-                        menuPedidos();
-                        break;
-                    default:
-                        salir = true;
+                switch (opcion) {
+                    case 1: menuCategorias(); break;
+                    case 2: menuProductos(); break;
+                    case 3: menuUsuarios(); break;
+                    case 4: menuPedidos(); break;
+                    default: salir = true;
                 }
 
-                if (salir){ //En caso de que salir sea verdadero rompe el bucle
-                    break;
-                }
-
+                if (salir) break;
             }
         } finally {
-            // 3) Persiste todo lo que haya en memoria a la BD. Se ejecuta tanto
-            //    en la salida normal (opción 0) como ante cualquier error fatal.
             DataSaver.guardarTodo(URL, categoriaService, productoService, usuarioService, pedidoService);
         }
 
         System.out.println("Cerrando programa...");
     }
 
-    public static void menuCategorias(){
+    // ===================== CATEGORIAS =====================
+
+    public static void menuCategorias() {
         System.out.println("=== Categorias ===");
         int opcion = menu();
-
-        switch (opcion){
-            case 1:
-                listarCategorias();
-                break;
-            case 2:
-                crearCategoria();
-                break;
-            case 3:
-                editarCategoria();
-                break;
-            case 4:
-                eliminarCategoria();
-                break;
+        switch (opcion) {
+            case 1: listarCategorias(); break;
+            case 2: crearCategoria(); break;
+            case 3: editarCategoria(); break;
+            case 4: eliminarCategoria(); break;
         }
     }
 
@@ -135,6 +101,11 @@ public class Main {
     }
 
     private static void editarCategoria() {
+        // FIX 1: cortar si no hay datos antes de pedir el id
+        if (categoriaService.listar().isEmpty()) {
+            System.out.println("No hay categorías cargadas");
+            return;
+        }
         listarCategorias();
         System.out.print("Ingrese el id de la categoría a editar: ");
         Long id;
@@ -152,7 +123,7 @@ public class Main {
 
         try {
             categoriaService.editar(id, nombre.isBlank() ? null : nombre,
-                                         descripcion.isBlank() ? null : descripcion);
+                    descripcion.isBlank() ? null : descripcion);
             System.out.println("Categoría actualizada correctamente");
         } catch (RuntimeException e) {
             System.out.println("Error: " + e.getMessage());
@@ -160,6 +131,10 @@ public class Main {
     }
 
     private static void eliminarCategoria() {
+        if (categoriaService.listar().isEmpty()) {
+            System.out.println("No hay categorías cargadas");
+            return;
+        }
         listarCategorias();
         System.out.print("Ingrese el id de la categoría a eliminar: ");
         Long id;
@@ -171,8 +146,7 @@ public class Main {
         }
 
         System.out.print("¿Confirma la eliminación? (S/N): ");
-        String confirmacion = sc.nextLine();
-        if (!confirmacion.equalsIgnoreCase("S")) {
+        if (!sc.nextLine().equalsIgnoreCase("S")) {
             System.out.println("Operación cancelada");
             return;
         }
@@ -185,23 +159,16 @@ public class Main {
         }
     }
 
-    public static void menuProductos(){
+    // ===================== PRODUCTOS =====================
+
+    public static void menuProductos() {
         System.out.println("=== Productos ===");
         int opcion = menu();
-
-        switch (opcion){
-            case 1:
-                listarProductos();
-                break;
-            case 2:
-                crearProducto();
-                break;
-            case 3:
-                editarProducto();
-                break;
-            case 4:
-                eliminarProducto();
-                break;
+        switch (opcion) {
+            case 1: listarProductos(); break;
+            case 2: crearProducto(); break;
+            case 3: editarProducto(); break;
+            case 4: eliminarProducto(); break;
         }
     }
 
@@ -214,12 +181,17 @@ public class Main {
         for (Producto p : productos) {
             System.out.println("ID: " + p.getId() + " | Nombre: " + p.getNombre()
                     + " | Precio: $" + p.getPrecio() + " | Stock: " + p.getStock()
+                    + " | Disponible: " + (p.isDisponible() ? "Sí" : "No")
                     + " | Categoría: " + p.getCategoria().getNombre());
         }
     }
 
     private static void crearProducto() {
-        // Listamos categorías para que el usuario sepa qué id elegir
+        // FIX: cortar si no hay categorías antes de pedir datos
+        if (categoriaService.listar().isEmpty()) {
+            System.out.println("No hay categorías cargadas. Debe crear una categoría primero.");
+            return;
+        }
         listarCategorias();
         System.out.print("Id de la categoría: ");
         Long idCategoria;
@@ -253,7 +225,7 @@ public class Main {
             return;
         }
 
-        System.out.print("Imagen (URL o ruta, opcional): ");
+        System.out.print("Imagen (URL o ruta, opcional - Enter para omitir): ");
         String imagen = sc.nextLine();
 
         System.out.print("¿Disponible? (S/N): ");
@@ -261,7 +233,7 @@ public class Main {
 
         try {
             Producto producto = productoService.crear(nombre, precio, descripcion, stock,
-                    imagen, disponible, idCategoria);
+                    imagen.isBlank() ? null : imagen, disponible, idCategoria);
             System.out.println("Producto creado con id " + producto.getId());
         } catch (RuntimeException e) {
             System.out.println("Error: " + e.getMessage());
@@ -269,6 +241,10 @@ public class Main {
     }
 
     private static void editarProducto() {
+        if (productoService.listar().isEmpty()) {
+            System.out.println("No hay productos cargados");
+            return;
+        }
         listarProductos();
         System.out.print("Ingrese el id del producto a editar: ");
         Long id;
@@ -332,6 +308,10 @@ public class Main {
     }
 
     private static void eliminarProducto() {
+        if (productoService.listar().isEmpty()) {
+            System.out.println("No hay productos cargados");
+            return;
+        }
         listarProductos();
         System.out.print("Ingrese el id del producto a eliminar: ");
         Long id;
@@ -356,23 +336,16 @@ public class Main {
         }
     }
 
-    public static void menuUsuarios(){
+    // ===================== USUARIOS =====================
+
+    public static void menuUsuarios() {
         System.out.println("=== Usuarios ===");
         int opcion = menu();
-
-        switch (opcion){
-            case 1:
-                listarUsuarios();
-                break;
-            case 2:
-                crearUsuario();
-                break;
-            case 3:
-                editarUsuario();
-                break;
-            case 4:
-                eliminarUsuario();
-                break;
+        switch (opcion) {
+            case 1: listarUsuarios(); break;
+            case 2: crearUsuario(); break;
+            case 3: editarUsuario(); break;
+            case 4: eliminarUsuario(); break;
         }
     }
 
@@ -384,7 +357,8 @@ public class Main {
         }
         for (Usuario u : usuarios) {
             System.out.println("ID: " + u.getId() + " | Nombre: " + u.getNombre() + " " + u.getApellido()
-                    + " | Email: " + u.getEmail() + " | Rol: " + u.getRol());
+                    + " | Email: " + u.getEmail() + " | Celular: " + u.getCelular()
+                    + " | Rol: " + u.getRol());
         }
     }
 
@@ -413,6 +387,10 @@ public class Main {
     }
 
     private static void editarUsuario() {
+        if (usuarioService.listar().isEmpty()) {
+            System.out.println("No hay usuarios cargados");
+            return;
+        }
         listarUsuarios();
         System.out.print("Ingrese el id del usuario a editar: ");
         Long id;
@@ -439,7 +417,8 @@ public class Main {
         }
 
         try {
-            usuarioService.editar(id, nombre.isBlank() ? null : nombre,
+            usuarioService.editar(id,
+                    nombre.isBlank() ? null : nombre,
                     apellido.isBlank() ? null : apellido,
                     email.isBlank() ? null : email,
                     celular.isBlank() ? null : celular,
@@ -451,6 +430,10 @@ public class Main {
     }
 
     private static void eliminarUsuario() {
+        if (usuarioService.listar().isEmpty()) {
+            System.out.println("No hay usuarios cargados");
+            return;
+        }
         listarUsuarios();
         System.out.print("Ingrese el id del usuario a eliminar: ");
         Long id;
@@ -475,16 +458,11 @@ public class Main {
         }
     }
 
-    // Pide el rol por número (más simple que tipear el nombre exacto del enum).
-    // Devuelve null si el usuario cancela (ingresa una opción fuera de rango repetidas veces no aplica acá,
-    // se reintenta hasta una entrada válida o vacía para cancelar).
     private static Rol pedirRol() {
         while (true) {
             System.out.println("Rol: 1. ADMIN  2. USUARIO  (Enter para cancelar)");
             String entrada = sc.nextLine();
-            if (entrada.isBlank()) {
-                return null;
-            }
+            if (entrada.isBlank()) return null;
             switch (entrada) {
                 case "1": return Rol.ADMIN;
                 case "2": return Rol.USUARIO;
@@ -493,23 +471,16 @@ public class Main {
         }
     }
 
-    public static void menuPedidos(){
+    // ===================== PEDIDOS =====================
+
+    public static void menuPedidos() {
         System.out.println("=== Pedidos ===");
         int opcion = menu();
-
-        switch (opcion){
-            case 1:
-                listarPedidos();
-                break;
-            case 2:
-                crearPedido();
-                break;
-            case 3:
-                actualizarPedido();
-                break;
-            case 4:
-                eliminarPedido();
-                break;
+        switch (opcion) {
+            case 1: listarPedidos(); break;
+            case 2: crearPedido(); break;
+            case 3: actualizarPedido(); break;
+            case 4: eliminarPedido(); break;
         }
     }
 
@@ -520,14 +491,27 @@ public class Main {
             return;
         }
         for (Pedido p : pedidos) {
-            System.out.println("ID: " + p.getId() + " | Usuario: " + p.getUsuario().getNombre()
-                    + " " + p.getUsuario().getApellido() + " | Estado: " + p.getEstado()
-                    + " | Forma de pago: " + p.getFormaPago() + " | Total: $" + p.getTotal()
+            System.out.println("ID: " + p.getId()
+                    + " | Usuario: " + p.getUsuario().getNombre() + " " + p.getUsuario().getApellido()
+                    + " | Estado: " + p.getEstado()
+                    + " | Forma de pago: " + (p.getFormaPago() != null ? p.getFormaPago() : "Sin definir")
+                    + " | Total: $" + p.getTotal()
                     + " | Fecha: " + p.getFecha());
         }
     }
 
     private static void crearPedido() {
+        // FIX: cortar si no hay usuarios
+        if (usuarioService.listar().isEmpty()) {
+            System.out.println("No hay usuarios cargados. Debe crear un usuario primero.");
+            return;
+        }
+        // FIX: cortar si no hay productos
+        if (productoService.listar().isEmpty()) {
+            System.out.println("No hay productos cargados. Debe crear un producto primero.");
+            return;
+        }
+
         listarUsuarios();
         System.out.print("Id del usuario: ");
         Long idUsuario;
@@ -538,7 +522,12 @@ public class Main {
             return;
         }
 
+        // FIX: cancelar si el usuario no elige forma de pago
         FormaPago formaPago = pedirFormaPago();
+        if (formaPago == null) {
+            System.out.println("Operación cancelada");
+            return;
+        }
 
         Pedido pedido;
         try {
@@ -549,16 +538,12 @@ public class Main {
         }
         System.out.println("Pedido creado con id " + pedido.getId() + ". Ahora cargá los productos.");
 
-        // Carga de 1..N detalles. Si algo falla, se cancela el pedido completo
-        // en memoria para no dejar datos inconsistentes (como pide la consigna).
         boolean agregoAlMenosUno = false;
         while (true) {
             listarProductos();
             System.out.print("Id del producto a agregar (Enter para terminar): ");
             String idProductoStr = sc.nextLine();
-            if (idProductoStr.isBlank()) {
-                break;
-            }
+            if (idProductoStr.isBlank()) break;
 
             Long idProducto;
             try {
@@ -599,6 +584,10 @@ public class Main {
     }
 
     private static void actualizarPedido() {
+        if (pedidoService.listar().isEmpty()) {
+            System.out.println("No hay pedidos cargados");
+            return;
+        }
         listarPedidos();
         System.out.print("Ingrese el id del pedido a actualizar: ");
         Long id;
@@ -638,6 +627,10 @@ public class Main {
     }
 
     private static void eliminarPedido() {
+        if (pedidoService.listar().isEmpty()) {
+            System.out.println("No hay pedidos cargados");
+            return;
+        }
         listarPedidos();
         System.out.print("Ingrese el id del pedido a eliminar: ");
         Long id;
@@ -666,9 +659,7 @@ public class Main {
         while (true) {
             System.out.println("Forma de pago: 1. TARJETA  2. TRANSFERENCIA  3. EFECTIVO  (Enter para cancelar)");
             String entrada = sc.nextLine();
-            if (entrada.isBlank()) {
-                return null;
-            }
+            if (entrada.isBlank()) return null;
             switch (entrada) {
                 case "1": return FormaPago.TARJETA;
                 case "2": return FormaPago.TRANSFERENCIA;
@@ -682,9 +673,7 @@ public class Main {
         while (true) {
             System.out.println("Estado: 1. PENDIENTE  2. CONFIRMADO  3. TERMINADO  4. CANCELADO  (Enter para cancelar)");
             String entrada = sc.nextLine();
-            if (entrada.isBlank()) {
-                return null;
-            }
+            if (entrada.isBlank()) return null;
             switch (entrada) {
                 case "1": return Estado.PENDIENTE;
                 case "2": return Estado.CONFIRMADO;
@@ -695,18 +684,16 @@ public class Main {
         }
     }
 
-    public static int menu(){
+    public static int menu() {
         int opcion = -1;
-
         do {
             try {
                 System.out.println("1. Listar\n2. Crear\n3. Editar\n4. Eliminar");
                 opcion = Integer.parseInt(sc.nextLine());
-            }catch (NumberFormatException nfe){
+            } catch (NumberFormatException nfe) {
                 System.out.println("Debe ingresar un numero entero...");
             }
-        }while (!List.of(1, 2, 3, 4).contains(opcion));
-
+        } while (!List.of(1, 2, 3, 4).contains(opcion));
         return opcion;
     }
 }
