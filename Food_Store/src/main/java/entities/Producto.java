@@ -1,5 +1,7 @@
 package entities;
 
+import java.time.LocalDateTime;
+
 public class Producto extends Base {
     private String nombre;
     private double precio;
@@ -7,17 +9,35 @@ public class Producto extends Base {
     private int stock;
     private String imagen;
     private boolean disponible;
+    private Categoria categoria;
 
     public Producto() {
     }
 
-    public Producto(String nombre, double precio, String descripcion, int stock, String imagen, boolean disponible) {
+    // Constructor para CREAR un producto nuevo desde el menú
+    public Producto(String nombre, double precio, String descripcion, int stock, String imagen,
+                     boolean disponible, Categoria categoria) {
+        super();
         this.nombre = nombre;
         this.precio = precio;
         this.descripcion = descripcion;
         this.stock = stock;
         this.imagen = imagen;
         this.disponible = disponible;
+        this.categoria = categoria;
+    }
+
+    // Constructor para RECONSTRUIR un producto leído desde la BD (usado por el DataLoader)
+    public Producto(Long id, String nombre, double precio, String descripcion, int stock, String imagen,
+                     boolean disponible, Categoria categoria, boolean eliminado, LocalDateTime createdAt) {
+        super(id, eliminado, createdAt);
+        this.nombre = nombre;
+        this.precio = precio;
+        this.descripcion = descripcion;
+        this.stock = stock;
+        this.imagen = imagen;
+        this.disponible = disponible;
+        this.categoria = categoria;
     }
 
     public String getNombre() {
@@ -88,5 +108,13 @@ public class Producto extends Base {
 
     public void setDisponible(boolean disponible) {
         this.disponible = disponible;
+    }
+
+    public Categoria getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(Categoria categoria) {
+        this.categoria = categoria;
     }
 }

@@ -2,6 +2,7 @@ package entities;
 
 import enums.Rol;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class Usuario extends Base {
@@ -15,12 +16,25 @@ public class Usuario extends Base {
     public Usuario() {
     }
 
+    // Constructor para CREAR un usuario nuevo desde el menú
     public Usuario(String nombre, String apellido, String email, String celular, Rol rol) {
+        super();
         setNombre(nombre);
         setApellido(apellido);
         setEmail(email);
         setCelular(celular);
         setRol(rol);
+    }
+
+    // Constructor para RECONSTRUIR un usuario leído desde la BD (usado por el DataLoader)
+    public Usuario(Long id, String nombre, String apellido, String email, String celular, Rol rol,
+                   boolean eliminado, LocalDateTime createdAt) {
+        super(id, eliminado, createdAt);
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.email = email;
+        this.celular = celular;
+        this.rol = rol;
     }
 
     public String getNombre() {
@@ -73,7 +87,7 @@ public class Usuario extends Base {
     public void setCelular(String celular) {
         if (celular == null || celular.trim().isEmpty()) {
             System.out.println("Este campo es obligatorio, no puede estar vacío");
-        }  else if (!nombre.matches("[0-9]+")) {
+        }  else if (!celular.matches("[0-9]+")) {
             System.out.println("Error, el celular solo puede contener números");
         } else {
             this.celular = celular;

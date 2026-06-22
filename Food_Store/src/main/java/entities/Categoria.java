@@ -1,7 +1,8 @@
 package entities;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
-public class Categoria extends Base {
+public class  Categoria extends Base {
     private String nombre;
     private String descripcion;
     private ArrayList<Producto> productos = new ArrayList<>();
@@ -9,7 +10,16 @@ public class Categoria extends Base {
     public Categoria() {
     }
 
+    // Constructor para CREAR una categoría nueva desde el menú
     public Categoria(String nombre, String descripcion) {
+        super();
+        this.nombre = nombre;
+        this.descripcion = descripcion;
+    }
+
+    // Constructor para RECONSTRUIR una categoría leída desde la BD (usado por el DataLoader)
+    public Categoria(Long id, String nombre, String descripcion, boolean eliminado, LocalDateTime createdAt) {
+        super(id, eliminado, createdAt);
         this.nombre = nombre;
         this.descripcion = descripcion;
     }
